@@ -526,7 +526,7 @@ show_info_menu() {
     echo -e " • ${YELLOW}Обновление кеша:${NC} Если вы вручную изменили список Workshop ID, не забудьте"
     echo -e "   запустить 'Обновить кэш имен всех модов' в меню модов."
     echo -e " • ${YELLOW}GitHub:${NC} Актуальная версия скрипта и документация всегда доступны"
-    echo -e "   на нашей странице на GitHub. (вставь сюда свою ссылку потом)"
+    echo -e "   на нашей странице на GitHub. https://github.com/ArthurPierce23/Project-Zomboid-Dedicated-Tool"
     echo ""
 
     pause
