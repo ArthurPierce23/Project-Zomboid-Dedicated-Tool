@@ -1,10 +1,20 @@
 #!/bin/bash
 
-# --- НАСТРОЙКИ СКРИПТА (не трогать, задаются в pz_manager.conf) ---
-# Пути к файлам кеша и логов можно оставить здесь или тоже вынести в конфиг
-MOD_CACHE_FILE="/home/pzuser/.zomboid_mod_cache.txt"
+# --- ПУТИ К ФАЙЛАМ СКРИПТА ---
+# Определяем пути согласно стандарту XDG для лучшей интеграции в систему
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/pz-manager"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/pz-manager"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/pz-manager"
+
+# Убедимся, что директории существуют
+mkdir -p "$CONFIG_DIR" "$CACHE_DIR" "$LOG_DIR"
+
+# Определяем пути к файлам
+CONFIG_FILE="${CONFIG_DIR}/pz_manager.conf"
+MOD_CACHE_FILE="${CACHE_DIR}/zomboid_mod_cache.txt"
+LOG_FILE="${LOG_DIR}/script_debug.log"
+
 EDITOR=${EDITOR:-nano} # Используем системный редактор, если он задан, иначе nano
-LOG_FILE="/home/pzuser/pz_script_debug.log"
 
 log() {
     echo -e "[$(date +'%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
@@ -23,15 +33,6 @@ contains_element () {
 }
 
 load_config() {
-    # Определяем правильное место для конфига согласно стандарту XDG
-    # Если переменная XDG_CONFIG_HOME не задана, используем ~/.config
-    # Создаем подпапку "pz-manager" для нашего скрипта
-    CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/pz-manager"
-    CONFIG_FILE="${CONFIG_DIR}/pz_manager.conf"
-
-    # Убедимся, что директория для конфига существует
-    mkdir -p "$CONFIG_DIR"
-
     if [[ -f "$CONFIG_FILE" ]]; then
         # Если конфиг есть, загружаем его
         echo -e "${GREEN}Конфигурационный файл найден в ${CONFIG_DIR}${NC}"
@@ -45,17 +46,17 @@ load_config() {
         echo "Давайте создадим его сейчас. Пожалуйста, укажите пути к вашим файлам."
         echo "Вы можете просто нажимать Enter, чтобы использовать значения по умолчанию."
 
-        local default_ini="/home/pzuser/Zomboid/Server/myzomboidworld.ini"
+        local default_ini="$HOME/Zomboid/Server/myzomboidworld.ini"
         echo -e -n "Путь к .ini файлу вашего мира [${YELLOW}${default_ini}${NC}]: "
         read ini_path
         INI_FILE=${ini_path:-$default_ini}
 
-        local default_sandbox="/home/pzuser/Zomboid/Server/myzomboidworld_SandboxVars.lua"
+        local default_sandbox="$HOME/Zomboid/Server/myzomboidworld_SandboxVars.lua"
         echo -e -n "Путь к SandboxVars.lua файлу [${YELLOW}${default_sandbox}${NC}]: "
         read sandbox_path
         SANDBOX_FILE=${sandbox_path:-$default_sandbox}
 
-        local default_saves="/home/pzuser/Zomboid/Saves/Multiplayer/myzomboidworld"
+        local default_saves="$HOME/Zomboid/Saves/Multiplayer/myzomboidworld"
         echo -e -n "Путь к папке сохранений мира [${YELLOW}${default_saves}${NC}]: "
         read saves_path
         SAVES_DIR=${saves_path:-$default_saves}
@@ -504,17 +505,6 @@ show_info_menu() {
     echo ""
     
     echo -e "${CYAN}--- Файлы самого скрипта ---${NC}"
-    # Определяем путь к конфигу еще раз, чтобы показать его здесь
-    local SCRIPT_DIR
-    SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-    local CONFIG_FILE
-    # Проверяем, где лежит конфиг - в домашней папке или рядом со скриптом
-    if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/pz-manager/pz_manager.conf" ]]; then
-       CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/pz-manager/pz_manager.conf"
-    else
-       CONFIG_FILE="${SCRIPT_DIR}/pz_manager.conf"
-    fi
-
     echo -e "Основной конфиг: ${YELLOW}${CONFIG_FILE}${NC}"
     echo -e "Кеш имен модов:   ${YELLOW}${MOD_CACHE_FILE}${NC}"
     echo -e "Лог-файл скрипта: ${YELLOW}${LOG_FILE}${NC}"
